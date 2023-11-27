@@ -40,7 +40,47 @@ class SignalTest(unittest.TestCase):
         testCallback = Mock()
         signal.Connect(testCallback)
 
-        with self.assertRaises(WrongSignalTypeError) as context:
+        with self.assertRaises(SignalTypeError) as context:
             signal.Emit("hello")
 
-        self.assertEqual(str(context.exception), "Signal(int) Emit() expects int but received str")
+        self.assertEqual(str(context.exception), "Emit expects int but received str")
+    
+    def test_GivenSignalWithoutType_WhenIsEmittedWithData_ThenRaiseError(self):
+        signal = Signal()
+        testCallback = Mock()
+        signal.Connect(testCallback)
+
+        with self.assertRaises(SignalTypeError) as context:
+            signal.Emit("hello")
+
+        self.assertEqual(str(context.exception), "Emit expects no argument but received str")
+
+    def test_Given2SignalsWhichIsAttached_WhenTheChildSignalIsEmitted_ThenTheParentSignalIsAlsoEmitted(self):
+        signal = Signal()
+        child_signal = Signal()
+        testCallback = Mock()
+        child_signal.Attach(signal)
+        signal.Connect(testCallback)
+
+        child_signal.Emit()
+
+        testCallback.assert_called_once()
+
+    def test_WhenAttachSignalWithNonSignalObject_ThenRaiseAttachError(self):
+        signal = Signal()
+
+        with self.assertRaises(AttachTypeError) as context:
+            signal.Attach(3)
+
+        self.assertEqual(str(context.exception), "Attach method expects Signal object but received int")
+
+    def test_WhenAttachSignal_WhenTheParentIsEmitted_ThenTheChildIsNot(self):
+        signal = Signal()
+        child_signal = Signal()
+        testCallback = Mock()
+        child_signal.Attach(signal)
+        child_signal.Connect(testCallback)
+
+        signal.Emit()
+
+        testCallback.assert_not_called()

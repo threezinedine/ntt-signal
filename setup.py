@@ -6,7 +6,7 @@ def load_readme():
 
 setup(
     name='ntt-signal',
-    version='1.0.1',
+    version='1.0.2',
     packages=find_packages(),
     install_requires=[
     ],
