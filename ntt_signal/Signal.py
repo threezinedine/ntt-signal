@@ -7,6 +7,11 @@ class Signal:
         self._datatype = datatype
         self._callbacks: List[callable] = []
         self._signals: list = []
+        self._maps: list = []
+
+    @property
+    def Datatype(self) -> type:
+        return self._datatype
 
     def Connect(self, callback: callable) -> None:
         self._callbacks.append(callback)
@@ -17,6 +22,8 @@ class Signal:
     def Attach(self, signal) -> None:
         if not isinstance(signal, Signal):
             raise AttachTypeError(f"Attach method expects Signal object but received {type(signal).__name__}")
+        elif signal.Datatype is not None and signal.Datatype != self._datatype:
+            raise AttachTypeError(f"Attach signal which require {signal.Datatype.__name__}, but does not have")
         self._signals.append(signal)
 
     def Emit(self, data: object = None) -> None:
@@ -38,4 +45,7 @@ class Signal:
                 callback(data)
 
         for signal in self._signals:
-            signal.Emit()
+            if signal.Datatype is not None:
+                signal.Emit(data)
+            else:
+                signal.Emit()
